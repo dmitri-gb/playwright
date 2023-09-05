@@ -151,6 +151,64 @@ Line7`,
   expect(result.output).toContain('Line7');
 });
 
+test('should print a compact diff on failure', async ({ runInlineTest }) => {
+  const result = await runInlineTest({
+    ...files,
+    'a.spec.js-snapshots/snapshot.txt': `Line1
+Line2
+Line3
+Line4
+Line5
+Line6
+Line7
+Line8
+Line9
+Line10
+Line12
+Line13
+Line14
+Line15
+Line16
+Line17
+Line18
+Line19
+Line20
+Line21`,
+    'a.spec.js': `
+      const { test, expect } = require('./helper');
+      test('is a test', ({}) => {
+        const data = [
+          'Line1*',
+          'Line2',
+          'Line3',
+          'Line4',
+          'Line5',
+          'Line6',
+          'Line7',
+          'Line8',
+          'Line9',
+          'Line10',
+          'Line11',
+          'Line12',
+          'Line13',
+          'Line14',
+          'Line15',
+          'Line16',
+          'Line17',
+          'Line18',
+          'Line19',
+          'Line20',
+          'Line21*',
+        ];
+        expect(data.join('\\n')).toMatchSnapshot('snapshot.txt');
+      });
+    `
+  });
+  expect(result.exitCode).toBe(1);
+  expect(result.output).toContain('Line4\n      ···\n      Line8');
+  expect(result.output).toContain('Line14\n      ···\n      Line18');
+});
+
 test('should write detailed failure result to an output folder', async ({ runInlineTest }, testInfo) => {
   const result = await runInlineTest({
     ...files,

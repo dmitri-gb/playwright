@@ -132,9 +132,18 @@ function diff_prettyTerminal(diffs: [number, string][]) {
       case DIFF_DELETE:
         html[x] = colors.reset(colors.strikethrough(colors.red(text)));
         break;
-      case DIFF_EQUAL:
-        html[x] = text;
+      case DIFF_EQUAL: {
+        const lines = text.split('\n');
+        if (lines.length > 9) {
+          const head = lines.slice(0, (diffs[x - 1][1] ?? '\n').endsWith('\n') ? 3 : 4);
+          const tail = lines.slice(-4);
+          const indent = head.at(-1)!.match(/^ */)![0];
+          html[x] = [...head, indent + colors.gray('···'), ...tail].join('\n');
+        } else {
+          html[x] = text;
+        }
         break;
+      }
     }
   }
   return html.join('');
